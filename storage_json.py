@@ -8,6 +8,7 @@ to JSON files while maintaining the required data structure.
 
 import json
 import os
+from typing import Dict, Any
 
 from istorage import IStorage
 
@@ -17,13 +18,13 @@ class StorageJson(IStorage):
     JSON file storage implementation for movies.
     """
 
-    def __init__(self, file_path):
+    def __init__(self, file_path: str) -> None:
         """
         Initializes the storage with a specific JSON file path.
         """
         self._file_path = file_path
 
-    def list_movies(self):
+    def list_movies(self) -> Dict[str, Dict[str, Any]]:
         """
         Returns a dictionary of dictionaries that
         contains the movies information in the database.
@@ -33,7 +34,7 @@ class StorageJson(IStorage):
             # Returns empty dictionary if file does not exist
             return {}
         try:  # Opens and reads the JSON file
-            with open(self._file_path, "r") as file:
+            with open(self._file_path, "r", encoding="utf-8") as file:
                 data = json.load(file)
             # Handles both old format {"Movies": {...}} and new format {...}
             if isinstance(data, dict) and "Movies" in data:
@@ -49,7 +50,7 @@ class StorageJson(IStorage):
             print(f"Error reading file: {e}")
             return {}
 
-    def add_movie(self, title, year, rating, poster):
+    def add_movie(self, title: str, year: int, rating: float, poster: str) -> None:
         """
         Adds a movie to the movies database.
         """
@@ -58,7 +59,7 @@ class StorageJson(IStorage):
         movies[title] = {"rating": rating, "year": year, "poster": poster}
         self._save_movies(movies)  # Saves dict back to file
 
-    def delete_movie(self, title):
+    def delete_movie(self, title: str) -> None:
         """
         Deletes a movie from the movies database.
         """
@@ -67,7 +68,7 @@ class StorageJson(IStorage):
             del movies[title]  # Deletes the movie
             self._save_movies(movies)  # Saves dict back to file
 
-    def update_movie(self, title, rating):
+    def update_movie(self, title: str, rating: float) -> None:
         """
         Updates a movie from the movies database.
         """
@@ -76,7 +77,7 @@ class StorageJson(IStorage):
             movies[title]["rating"] = rating  # Updates only the rating
             self._save_movies(movies)  # Saves dict back to file
 
-    def _save_movies(self, movies):
+    def _save_movies(self, movies: Dict[str, Dict[str, Any]]) -> None:
         """
         Helper method to save movies to the JSON file.
         """
@@ -86,7 +87,7 @@ class StorageJson(IStorage):
             if directory and not os.path.exists(directory):
                 os.makedirs(directory)
             # Saves dict to file with proper formatting
-            with open(self._file_path, "w") as file:
+            with open(self._file_path, "w", encoding="utf-8") as file:
                 json.dump(movies, file, indent=4)
 
         except OSError as e:
