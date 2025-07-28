@@ -1,15 +1,21 @@
+# Environment variables and API keys
+.env
+*.env
+.env.*
+!.env.example
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.pyc
 
 # Virtual environments
 venv/
 .venv/
 env/
-.env/
 ENV/
 virtualenv/
 pip-log.txt
@@ -21,6 +27,7 @@ pip-delete-this-directory.txt
 *.swp
 *.swo
 *~
+*.sublime-*
 
 # OS
 .DS_Store
@@ -30,17 +37,53 @@ pip-delete-this-directory.txt
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
-# Testing
+# Testing and coverage
 .coverage
 .pytest_cache/
 htmlcov/
+*.cover
+.hypothesis/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
 
 # Distribution / packaging
 dist/
 build/
 *.egg-info/
 *.egg
+.eggs/
+wheels/
+pip-wheel-metadata/
 
 # Project specific
 *.log
+*.csv
+*.json
+!requirements.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*~
+*.tmp
+
+# Generated files
+_generated_*
+*_output/
