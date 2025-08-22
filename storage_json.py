@@ -8,7 +8,6 @@ to JSON files while maintaining the required data structure.
 
 import json
 import os
-from typing import Dict, Any
 
 from istorage import IStorage
 
@@ -24,7 +23,7 @@ class StorageJson(IStorage):
         """
         self._file_path = file_path
 
-    def list_movies(self) -> Dict[str, Dict[str, Any]]:
+    def list_movies(self) -> dict:
         """
         Returns a dictionary of dictionaries that
         contains the movies information in the database.
@@ -50,7 +49,13 @@ class StorageJson(IStorage):
             print(f"Error reading file: {e}")
             return {}
 
-    def add_movie(self, title: str, year: int, rating: float, poster: str) -> None:
+    def add_movie(
+            self,
+            title: str,
+            year: int,
+            rating: float,
+            poster: str
+            ) -> None:
         """
         Adds a movie to the movies database.
         """
@@ -77,7 +82,25 @@ class StorageJson(IStorage):
             movies[title]["rating"] = rating  # Updates only the rating
             self._save_movies(movies)  # Saves dict back to file
 
-    def _save_movies(self, movies: Dict[str, Dict[str, Any]]) -> None:
+    def _ensure_file_exists(self) -> None:
+        """
+        Creates JSON file with empty structure if it does not exist.
+        Called lazily only when needed.
+        """
+        # Checks if file exists
+        if not os.path.exists(self._file_path):
+            try:
+                # Creates directory if needed
+                directory = os.path.dirname(self._file_path)
+                if directory and not os.path.exists(directory):
+                    os.makedirs(directory)
+                # Creates file with empty movie dict
+                with open(self._file_path, "w", encoding="utf-8") as file:
+                    json.dump({}, file, indent=4)
+            except OSError as e:
+                print(f"Error creating JSON file: {e}")
+
+    def _save_movies(self, movies: dict) -> None:
         """
         Helper method to save movies to the JSON file.
         """
@@ -89,6 +112,5 @@ class StorageJson(IStorage):
             # Saves dict to file with proper formatting
             with open(self._file_path, "w", encoding="utf-8") as file:
                 json.dump(movies, file, indent=4)
-
         except OSError as e:
             print(f"Error saving file: {e}")

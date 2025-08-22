@@ -10,7 +10,7 @@ from storage_csv import StorageCsv
 from storage_json import StorageJson
 
 
-def main():
+def main() -> None:
     """
     Main function that initializes and runs the movie application.
     """

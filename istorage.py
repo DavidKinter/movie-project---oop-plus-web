@@ -15,7 +15,7 @@ class IStorage(ABC):
     """
 
     @abstractmethod
-    def list_movies(self):
+    def list_movies(self) -> dict:
         """
         Returns a dictionary of dictionaries that
         contains the movies information in the database.
@@ -25,7 +25,13 @@ class IStorage(ABC):
         """
 
     @abstractmethod
-    def add_movie(self, title, year, rating, poster):
+    def add_movie(
+            self,
+            title: str,
+            year: int,
+            rating: float,
+            poster: str
+            ) -> None:
         """
         Adds a movie to the movies database.
         Loads the information from storage, adds the movie,
@@ -35,7 +41,7 @@ class IStorage(ABC):
         """
 
     @abstractmethod
-    def delete_movie(self, title):
+    def delete_movie(self, title: str) -> None:
         """
         Deletes a movie from the movies database.
         Loads the information from storage, deletes the movie,
@@ -45,7 +51,7 @@ class IStorage(ABC):
         """
 
     @abstractmethod
-    def update_movie(self, title, rating):
+    def update_movie(self, title: str, rating: float) -> None:
         """
         Updates a movie from the movies database.
         Loads the information from storage, updates the movie,

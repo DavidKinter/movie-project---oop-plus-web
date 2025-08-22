@@ -6,9 +6,11 @@ menu display, and command execution while using a storage interface for
 data persistence.
 """
 
+import base64
 import os
 import random
 import re
+import shutil
 import statistics as stats
 import sys
 from datetime import date
@@ -29,7 +31,6 @@ MAX_RATING = 10.0
 RATING_DECIMAL_PLACES = 1
 
 # API Constants
-# SECURITY: Using dotenv to load API key from .env file
 OMDB_API_KEY = os.getenv("OMDB_API_KEY")
 if not OMDB_API_KEY:
     print("WARNING: OMDB_API_KEY not found in environment variables!")
@@ -38,6 +39,20 @@ OMDB_BASE_URL = "http://www.omdbapi.com/"
 API_TIMEOUT_SECONDS = 10  # Timeout for API requests
 REQUIRED_API_FIELDS = ["Title", "Year", "imdbRating", "Poster"]
 
+# Website Generation Constants
+TEMPLATE_PATH = os.path.join("templates", "_static", "index_template.html")
+OUTPUT_HTML_PATH = "index.html"
+OUTPUT_CSS_PATH = "style.css"
+SOURCE_CSS_PATH = os.path.join("templates", "_static", "style.css")
+
+# Self-contained SVG placeholder for missing posters
+PLACEHOLDER_POSTER = "data:image/svg+xml;base64," + base64.b64encode(
+    b'''<svg xmlns="http://www.w3.org/2000/svg" width="128" height="193">
+  <rect fill="#ddd" width="128" height="193"/>
+  <text x="64" y="96" text-anchor="middle" fill="#777">No Poster</text>
+</svg>'''
+    ).decode()
+
 
 # pylint: disable=too-few-public-methods
 class MovieApp:
@@ -45,7 +60,7 @@ class MovieApp:
     Main application class for the movie database.
     """
 
-    def __init__(self, storage: IStorage):
+    def __init__(self, storage: IStorage) -> None:
         """
         Initializes the MovieApp with a storage implementation.
         """
@@ -74,8 +89,9 @@ class MovieApp:
             "6. Random movie\n"
             "7. Search movie\n"
             "8. Movies sorted by rating\n"
-            "9. Movies sorted by year\n"
-            "10. Filter movies"
+            "9. Generate website\n"
+            "10. Movies sorted by year\n"
+            "11. Filter movies"
             )
 
     def _command_list_movies(self) -> None:
@@ -100,7 +116,7 @@ class MovieApp:
             return False
         return True
 
-    def _get_ratings_list(self, movies: dict) -> list[float]:
+    def _get_ratings_list(self, movies: dict) -> list:
         """
         Extracts all ratings from movies dict as a list of floats.
         """
@@ -115,12 +131,12 @@ class MovieApp:
         Validates that API response contains all required fields.
         Returns True if valid, False otherwise.
         """
-        # Check if movie was found
+        # Checks if movie was found
         if data.get("Response") == "False":
             print(f'Movie "{title}" not found in OMDb API')
             return False
 
-        # Validate required fields exist
+        # Validates required fields exist
         for field in REQUIRED_API_FIELDS:
             if field not in data:
                 print(f"Warning: Missing {field} in API response.")
@@ -138,7 +154,7 @@ class MovieApp:
             "poster": data.get("Poster", "")
             }
 
-    def _fetch_movie_from_api(self, title: str) -> dict | None:
+    def _fetch_movie_from_api(self, title: str) -> dict:
         """
         Fetches movie data from OMDb API.
         Returns movie data dict on success, None on failure.
@@ -457,6 +473,124 @@ class MovieApp:
         except ValueError as e:
             print(f"Error: {e}.")
 
+    def _generate_website(self) -> None:
+        """
+        Generates an HTML website displaying all movies.
+        """
+        # Step 1: Load template
+        template = self._load_html_template()
+        if not template:
+            return  # Error already printed
+
+        # Step 2: Get movies
+        movies = self._storage.list_movies()
+
+        # Step 3: Create HTML content
+        movie_grid = self._build_movie_grid_html(movies)
+
+        # Step 4: Generate final HTML
+        final_html = self._substitute_template_placeholders(
+            template, movie_grid
+            )
+
+        # Step 5: Save website
+        self._write_website_file(final_html)
+
+        # Step 6: Copy CSS
+        self._copy_style_file()
+
+    def _load_html_template(self) -> str:
+        """
+        Reads the HTML template file.
+        """
+        try:
+            with open(TEMPLATE_PATH, "r", encoding="utf-8") as file:
+                content = file.read()
+            return content
+        except FileNotFoundError:
+            print(f"Error: Template file not found at {TEMPLATE_PATH}")
+            print("Create the folders: templates/_static/")
+            return None
+        except IOError as e:
+            print(f"Error reading template: {e}")
+            return None
+
+    def _build_movie_grid_html(self, movies: dict) -> str:
+        """
+        Creates HTML for the movie grid.
+        """
+        if not movies:
+            # Returns message for empty collection
+            return "<li>No movies in collection. Add movies first!</li>"
+
+        # Builds HTML for each movie
+        movie_items = []
+        for title, details in movies.items():
+            html_item = self._create_movie_item_html(title, details)
+            movie_items.append(html_item)
+
+        return "\n".join(movie_items)
+
+    def _create_movie_item_html(self, title: str, details: dict) -> str:
+        """
+        Creates HTML for a single movie.
+        """
+        # Extracts data with safe defaults
+        year = details.get("year", "N/A")
+        poster_url = details.get("poster", "")
+
+        # Handles missing poster
+        if not poster_url or poster_url == "N/A":
+            poster_url = PLACEHOLDER_POSTER
+
+        # Builds HTML string
+        html = f"""
+<li>
+    <div class="movie">
+        <img class="movie-poster" src="{poster_url}" alt="{title}"/>
+        <div class="movie-title">{title}</div>
+        <div class="movie-year">{year}</div>
+    </div>
+</li>
+"""
+        return html
+
+    def _substitute_template_placeholders(
+            self,
+            template: str,
+            movie_grid: str
+            ) -> str:
+        """
+        Replaces placeholders in template with actual content.
+        """
+        html = template.replace("__TEMPLATE_TITLE__", "My Movie App")
+        html = html.replace("__TEMPLATE_MOVIE_GRID__", movie_grid)
+        return html
+
+    def _write_website_file(self, html_content: str) -> None:
+        """
+        Saves the generated HTML to a file.
+        """
+        try:
+            with open(OUTPUT_HTML_PATH, "w", encoding="utf-8") as file:
+                file.write(html_content)
+            print("Website was generated successfully.")
+        except IOError as e:
+            print(f"Error saving website: {e}")
+
+    def _copy_style_file(self) -> None:
+        """
+        Copies CSS file to output directory.
+        """
+        try:
+            shutil.copy(SOURCE_CSS_PATH, OUTPUT_CSS_PATH)
+        except FileNotFoundError:
+            # CSS is optional, website works without it
+            pass
+        except IOError:
+            # Non-critical error, ignore silently
+            pass
+
     def _find_movie_key(self, movies: dict, search_title: str) -> str:
         """
         Performs case-insensitive search for movie title.
@@ -532,7 +666,7 @@ class MovieApp:
         """
         return f"{title} ({year}): {rating}"
 
-    def _print_movie_list(self, movies: list[tuple]) -> None:
+    def _print_movie_list(self, movies: list) -> None:
         """
         Prints a formatted list of movies.
         """
@@ -541,7 +675,7 @@ class MovieApp:
             rating = details.get("rating", "N/A")
             print(self._format_movie_line(title, year, rating))
 
-    def _sort_movies_by_title(self, movies: dict) -> list[tuple]:
+    def _sort_movies_by_title(self, movies: dict) -> list:
         """
         Sorts movies alphabetically by title.
         """
@@ -551,7 +685,7 @@ class MovieApp:
             self,
             movies: dict,
             descending: bool = True
-            ) -> list[tuple]:
+            ) -> list:
         """
         Sorts movies by rating.
         """
@@ -565,7 +699,7 @@ class MovieApp:
             self,
             movies: dict,
             descending: bool = True
-            ) -> list[tuple]:
+            ) -> list:
         """
         Sorts movies by year, then by rating.
         """
@@ -624,7 +758,7 @@ class MovieApp:
             min_rating: float,
             start_year: int,
             end_year: int
-            ) -> list[tuple]:
+            ) -> list:
         """
         Filters movies based on rating and year criteria.
         """
@@ -640,7 +774,7 @@ class MovieApp:
                 filtered_movies.append((title, details))
         return filtered_movies
 
-    def _display_filtered_results(self, filtered_movies: list[tuple]) -> None:
+    def _display_filtered_results(self, filtered_movies: list) -> None:
         """
         Displays filtered movie results.
         """
@@ -658,13 +792,13 @@ class MovieApp:
         Gets and validates user menu choice.
         """
         valid_choices = [
-            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"
             ]
         while True:
-            choice = input("\nEnter choice (0-10): ").strip()
+            choice = input("\nEnter choice (0-11): ").strip()
             if choice in valid_choices:
                 return choice
-            print("Invalid choice. Please enter 0-10.")
+            print("Invalid choice. Please enter 0-11.")
 
     def _execute_command(self, choice: str) -> None:
         """
@@ -679,17 +813,13 @@ class MovieApp:
             "6":  self._command_random_movie,
             "7":  self._command_search_movie,
             "8":  self._command_sorted_by_rating,
-            "9":  self._command_sorted_by_year,
-            "10": self._command_filter_movies
+            "9":  self._generate_website,
+            "10": self._command_sorted_by_year,
+            "11": self._command_filter_movies
             }
         command = commands.get(choice)
         if command:
             command()
-
-    def _generate_website(self) -> None:
-        """
-        Placeholder for website generation.
-        """
 
     def run(self) -> None:
         """

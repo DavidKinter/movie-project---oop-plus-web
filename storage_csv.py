@@ -7,7 +7,6 @@ using CSV files for data persistence.
 
 import csv
 import os
-from typing import Dict, Any
 
 from istorage import IStorage
 
@@ -25,28 +24,30 @@ class StorageCsv(IStorage):
         Initializes the storage with a specific CSV file path.
         """
         self._file_path = file_path
-        # Creates file with headers if it does not exist
-        self._initialize_file()
 
-    def _initialize_file(self) -> None:
+    def _ensure_file_exists(self) -> None:
         """
         Creates CSV file with headers if it does not exist.
+        Called lazily only when needed.
         """
         # Checks if file exists
         if not os.path.exists(self._file_path):
-            # Creates directory if needed
-            directory = os.path.dirname(self._file_path)
-            if directory and not os.path.exists(directory):
-                os.makedirs(directory)
-            # Creates file with headers
-            with open(
-                    self._file_path, "w", newline="", encoding="utf-8"
-                    ) as file:
-                writer = csv.writer(file)
-                # Writes header row
-                writer.writerow(self.FIELDNAMES)
+            try:
+                # Creates directory if needed
+                directory = os.path.dirname(self._file_path)
+                if directory and not os.path.exists(directory):
+                    os.makedirs(directory)
+                # Creates file with headers
+                with open(
+                        self._file_path, "w", newline="", encoding="utf-8"
+                        ) as file:
+                    writer = csv.writer(file)
+                    # Writes header row
+                    writer.writerow(self.FIELDNAMES)
+            except OSError as e:
+                print(f"Error creating CSV file: {e}")
 
-    def list_movies(self) -> Dict[str, Dict[str, Any]]:
+    def list_movies(self) -> dict:
         """
         Returns a dictionary of dictionaries that contains the movies
         information in the database.
@@ -91,6 +92,8 @@ class StorageCsv(IStorage):
         """
         Adds a movie to the movies database.
         """
+        # Ensures file exists before appending
+        self._ensure_file_exists()
         # Appends new row to CSV file
         try:
             with open(
