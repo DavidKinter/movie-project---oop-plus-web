@@ -1,18 +1,18 @@
 # Movie Database Application
 
-A comprehensive movie database management system built with Python, featuring OOP design patterns, API integration, and web interface generation.
+A Python-based movie database management system featuring object-oriented design, external API integration, and static website generation.
 
-## 🎬 Features
+## Features
 
-- **Multiple Storage Backends**: Supports both JSON and CSV file storage through a clean interface design
-- **Multi-User Support**: Different users can maintain separate movie collections
-- **OMDb API Integration**: Automatically fetches movie details (year, rating, poster) from OMDb API
-- **Static Website Generation**: Creates a beautiful HTML website of your movie collection
-- **Rich Statistics**: View average ratings, median ratings, best and worst movies
-- **Search & Filter**: Search movies by title, filter by year range or minimum rating
-- **Sorting Options**: Sort movies by title, rating, or year
+- **Multiple Storage Formats**: Supports both JSON and CSV file storage through a unified interface
+- **Multi-User Support**: Separate movie collections for different users
+- **API Integration**: Automatically fetches movie data (year, rating, poster) from OMDb API
+- **Website Generation**: Creates static HTML pages to display your movie collection
+- **Movie Statistics**: Calculate average ratings, find best/worst rated movies
+- **Search and Filter**: Search by title, filter by year range or rating
+- **Sorting Options**: Sort movies by title, rating, or release year
 
-## 🚀 Installation
+## Installation
 
 1. Clone the repository:
 ```bash
@@ -25,161 +25,99 @@ cd movie-project---oop-plus-web
 pip install -r requirements.txt
 ```
 
-3. Set up your OMDb API key:
+3. Set up OMDb API key:
    - Get a free API key from [OMDb API](https://www.omdbapi.com/apikey.aspx)
    - Create a `.env` file in the project root:
    ```
    OMDB_API_KEY=your_api_key_here
    ```
 
-## 📖 Usage
+## Usage
 
 Run the application:
 ```bash
 python main.py
 ```
 
-You'll be prompted to select a user profile (John, Sara, or Jack), then presented with a comprehensive menu system.
+Select a user profile when prompted, then use the menu system to manage your movie collection.
 
-### Available Commands
+### Menu Options
 
+0. **Exit** - Close the application
 1. **List movies** - Display all movies in your collection
-2. **Add movie** - Add a new movie (automatically fetches data from OMDb)
+2. **Add movie** - Add a new movie (fetches data from OMDb API)
 3. **Delete movie** - Remove a movie from your collection
-4. **Update movie** - Change a movie's rating
-5. **Stats** - View statistics (average, median, best, worst)
+4. **Update movie** - Modify a movie's rating
+5. **Stats** - View collection statistics
 6. **Random movie** - Get a random movie suggestion
-7. **Search movie** - Search for movies by title
-8. **Movies sorted by rating** - View movies from highest to lowest rating
+7. **Search movie** - Find movies by title
+8. **Movies sorted by rating** - View movies by rating (high to low)
 9. **Generate website** - Create a static HTML website
 10. **Movies sorted by year** - View movies chronologically
-11. **Filter movies** - Filter by rating, year range
+11. **Filter movies** - Filter by rating or year range
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
-movie-project---oop-plus-web/
-├── storage/                    # Storage package
+.
+├── storage/                    # Storage implementations package
 │   ├── __init__.py            # Package initialization
-│   ├── istorage.py            # Storage interface (abstract base)
+│   ├── istorage.py            # Abstract storage interface
 │   ├── storage_json.py        # JSON storage implementation
-│   └── storage_csv.py         # CSV storage implementation
-├── data/                      # Data files directory
-│   ├── john_movies.json       # John's movie collection
-│   ├── sara_movies.csv        # Sara's movie collection
-│   └── jack_movies.json       # Jack's movie collection
-├── templates/                 # HTML templates
+│   ├── storage_csv.py         # CSV storage implementation
+│   └── storage_utils.py       # Shared utility functions
+├── data/                      # User data files
+│   └── .gitkeep              # Ensures directory exists in git
+├── templates/                 # Website templates
 │   └── _static/
-│       ├── index_template.html  # HTML template
-│       └── style.css            # CSS styles
-├── movie_app.py              # Main application class
+│       ├── index_template.html
+│       └── style.css
+├── movie_app.py              # Main application logic
 ├── main.py                   # Entry point
 ├── requirements.txt          # Python dependencies
-├── .env                      # Environment variables (not in repo)
-├── .gitignore               # Git ignore rules
+├── .gitignore               # Git ignore configuration
 └── README.md                # This file
 ```
 
-## 🔧 Technical Details
+## Technical Details
 
-### Design Patterns
+### Architecture
 
-- **Strategy Pattern**: Different storage implementations (JSON, CSV) implementing the same interface
-- **Dependency Injection**: Storage implementation injected into MovieApp
-- **Separation of Concerns**: Clear separation between UI, business logic, and data persistence
+- **Interface-based design**: `IStorage` interface defines storage operations
+- **Strategy pattern**: Swap between JSON and CSV storage implementations
+- **Dependency injection**: Storage implementation passed to `MovieApp` at runtime
+- **Separation of concerns**: Clear boundaries between UI, business logic, and data layers
 
-### Technologies
+### Dependencies
 
-- **Python 3.x**: Core language
-- **Object-Oriented Programming**: Clean architecture with interfaces and implementations
-- **requests**: For API communication
-- **python-dotenv**: For environment variable management
-- **OMDb API**: Movie data source
+- `requests`: HTTP library for API calls
+- `python-dotenv`: Environment variable management
+- Python 3.x standard library modules
 
-## 🎯 Future Enhancements
+### Data Storage
 
-- [ ] Add SQLite database support
-- [ ] Implement user authentication
-- [ ] Create dynamic web interface with Flask
-- [ ] Add movie recommendations based on ratings
-- [ ] Export to different formats (PDF, Excel)
-- [ ] Add movie poster caching
+The application stores movie data with the following structure:
+- **Title**: Movie name (used as unique identifier)
+- **Year**: Release year
+- **Rating**: Numeric rating (0.0-10.0)
+- **Poster**: URL to movie poster image
 
-## 📝 License
+## Implementation Notes
 
-This project is part of the Masterschool curriculum.
+### User Configuration
 
-## 👤 Author
+The application comes with three pre-configured users:
+- **John**: Uses JSON storage (`data/john_movies.json`)
+- **Sara**: Uses CSV storage (`data/sara_movies.csv`)
+- **Jack**: Uses JSON storage (`data/jack_movies.json`)
 
-David Kinter
+### Code Standards
 
-## 🙏 Acknowledgments
-```
-- Masterschool for the project requirements
-- OMDb API for movie data
-```
+- Follows PEP 8 conventions
+- Type hints used throughout the codebase
+- Comprehensive docstrings for all classes and methods
+- Error handling for file operations and API calls
 
-#### Create .gitignore
+## License
 
-Create `.gitignore`:
-```
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Virtual environments
-venv/
-env/
-ENV/
-.venv
-.env
-
-# IDE specific files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Project specific
-data/*.json
-data/*.csv
-!data/.gitkeep
-
-# Generated website files
-index.html
-/style.css
-
-# Keep templates
-!templates/
-!templates/_static/
-!templates/_static/*.html
-!templates/_static/*.css
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Distribution
-dist/
-build/
-*.egg-info/
-```
-
-#### Create data/.gitkeep
-
-This ensures the data directory is tracked by Git:
-```bash
-touch data/.gitkeep
-```
-
-#### Verify requirements.txt
-
-Your `requirements.txt` should contain:
-```
-requests==2.32.4
-python-dotenv==1.1.1
-```
+This project is created for educational purposes.
