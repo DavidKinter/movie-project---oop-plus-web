@@ -79,8 +79,13 @@ class StorageCsv(IStorage):
         """
         Adds a movie to the movies database.
         """
-        # Ensures file exists before appending
+        # Check if file exists and is empty (needs headers)
+        file_exists = os.path.exists(self._file_path)
+        file_empty = not file_exists or os.path.getsize(self._file_path) == 0
+
+        # Ensures directory exists
         self._ensure_file_exists()
+
         # Appends new row to CSV file
         try:
             with open(
@@ -89,6 +94,9 @@ class StorageCsv(IStorage):
                     encoding="utf-8"
                     ) as file:
                 writer = csv.writer(file)
+                # Write headers if file is new or empty
+                if file_empty:
+                    writer.writerow(self.FIELDNAMES)
                 # Writes the movie data as a new row
                 writer.writerow([title, year, rating, poster])
         except OSError as e:
