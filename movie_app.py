@@ -18,7 +18,7 @@ from datetime import date
 import requests  # Add this import for API calls
 from dotenv import load_dotenv  # Add this import for environment variables
 
-from istorage import IStorage
+from storage import IStorage
 
 # Load environment variables from .env file
 load_dotenv()

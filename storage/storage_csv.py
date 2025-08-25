@@ -8,7 +8,8 @@ using CSV files for data persistence.
 import csv
 import os
 
-from istorage import IStorage
+from .istorage import IStorage
+from .storage_utils import ensure_directory_exists
 
 
 class StorageCsv(IStorage):
@@ -30,22 +31,8 @@ class StorageCsv(IStorage):
         Creates CSV file with headers if it does not exist.
         Called lazily only when needed.
         """
-        # Checks if file exists
-        if not os.path.exists(self._file_path):
-            try:
-                # Creates directory if needed
-                directory = os.path.dirname(self._file_path)
-                if directory and not os.path.exists(directory):
-                    os.makedirs(directory)
-                # Creates file with headers
-                with open(
-                        self._file_path, "w", newline="", encoding="utf-8"
-                        ) as file:
-                    writer = csv.writer(file)
-                    # Writes header row
-                    writer.writerow(self.FIELDNAMES)
-            except OSError as e:
-                print(f"Error creating CSV file: {e}")
+        ensure_directory_exists(self._file_path)
+
 
     def list_movies(self) -> dict:
         """

@@ -6,9 +6,7 @@ the movie database application.
 """
 
 from movie_app import MovieApp
-from storage_csv import StorageCsv
-from storage_json import StorageJson
-
+from storage import StorageCsv, StorageJson
 
 def main() -> None:
     """
@@ -16,9 +14,9 @@ def main() -> None:
     """
     # Define user storage configurations
     users = {
-        "1": {"name": "John", "storage": StorageJson("john_movies.json")},
-        "2": {"name": "Sara", "storage": StorageCsv("sara_movies.csv")},
-        "3": {"name": "Jack", "storage": StorageJson("jack_movies.json")}
+        "1": {"name": "John", "storage": StorageJson("data/john_movies.json")},
+        "2": {"name": "Sara", "storage": StorageCsv("data/sara_movies.csv")},
+        "3": {"name": "Jack", "storage": StorageJson("data/jack_movies.json")}
         }
 
     # Display user selection menu

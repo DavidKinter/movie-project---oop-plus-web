@@ -9,7 +9,8 @@ to JSON files while maintaining the required data structure.
 import json
 import os
 
-from istorage import IStorage
+from .istorage import IStorage
+from .storage_utils import ensure_directory_exists
 
 
 class StorageJson(IStorage):
@@ -87,18 +88,8 @@ class StorageJson(IStorage):
         Creates JSON file with empty structure if it does not exist.
         Called lazily only when needed.
         """
-        # Checks if file exists
-        if not os.path.exists(self._file_path):
-            try:
-                # Creates directory if needed
-                directory = os.path.dirname(self._file_path)
-                if directory and not os.path.exists(directory):
-                    os.makedirs(directory)
-                # Creates file with empty movie dict
-                with open(self._file_path, "w", encoding="utf-8") as file:
-                    json.dump({}, file, indent=4)
-            except OSError as e:
-                print(f"Error creating JSON file: {e}")
+        ensure_directory_exists(self._file_path)
+
 
     def _save_movies(self, movies: dict) -> None:
         """
