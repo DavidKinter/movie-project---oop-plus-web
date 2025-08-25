@@ -1,89 +1,44 @@
-# Environment variables and API keys
-.env
-*.env
-.env.*
-!.env.example
-
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-*.pyc
 
 # Virtual environments
 venv/
-.venv/
 env/
 ENV/
-virtualenv/
-pip-log.txt
-pip-delete-this-directory.txt
+.venv
+.env
 
-# IDEs
-.idea/
+# IDE specific files
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
-*.sublime-*
-
-# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
 
-# Testing and coverage
-.coverage
+# Project specific
+data/*.json
+data/*.csv
+!data/.gitkeep
+
+# Generated website files
+index.html
+/style.css
+
+# Keep templates
+!templates/
+!templates/_static/
+!templates/_static/*.html
+!templates/_static/*.css
+
+# Testing
 .pytest_cache/
+.coverage
 htmlcov/
-*.cover
-.hypothesis/
-.tox/
-nosetests.xml
-coverage.xml
-*.cover
 
-# Distribution / packaging
+# Distribution
 dist/
 build/
 *.egg-info/
-*.egg
-.eggs/
-wheels/
-pip-wheel-metadata/
-
-# Project specific
-*.log
-*.csv
-*.json
-!requirements.txt
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Backup files
-*.bak
-*.backup
-*~
-*.tmp
-
-# Generated files
-_generated_*
-*_output/
